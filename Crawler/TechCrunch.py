@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-def scrape_techcrunch_ai_articles(start_page=1, end_page=20):
+def scrape_techcrunch_ai_articles(start_page=1, end_page=50):
     """TechCrunch AI 카테고리에서 기사를 수집하는 함수"""
 
     # 저장용 리스트
@@ -121,7 +121,7 @@ def main():
     print("TechCrunch AI 기사 수집을 시작합니다...")
 
     # 기사 수집 실행
-    data, failed_urls = scrape_techcrunch_ai_articles(start_page=1, end_page=20)
+    data, failed_urls = scrape_techcrunch_ai_articles(start_page=1, end_page=50)
 
     # 결과 출력
     print(f"\n수집 완료!")
