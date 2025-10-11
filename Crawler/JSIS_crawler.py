@@ -12,7 +12,7 @@ from selenium.common.exceptions import TimeoutException, StaleElementReferenceEx
 # ===== 사용자 설정 =====
 vol_start = 34
 vol_end = 35  # 34까지 포함되도록 +1
-iss_list = ["1", "2"]
+iss_list = ["3", "4"]
 HEADLESS = False
 
 SAVE_DIR = r"/Users/choihj/PycharmProjects/Journal/Data/JSIS"
