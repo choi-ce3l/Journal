@@ -5,7 +5,7 @@ import time
 
 def scrape_issue(vol:int, iss:int, out_csv:str):
     driver = uc.Chrome(headless=False)
-    toc_url = f"https://www.tandfonline.com/toc/tjis20/{vol}/{iss}?nav=tocList"
+    toc_url=f"https://www.tandfonline.com/toc/mmis20/{vol}/{iss}?nav=tocList"
     driver.get(toc_url)
     time.sleep(5)
 
@@ -46,8 +46,8 @@ def scrape_issue(vol:int, iss:int, out_csv:str):
 
 # 실행 예시
 if __name__ == "__main__":
-    # vol: 32-34
-    # iss: 1-6
-    vol=32
-    for iss in range(6,7):
-        scrape_issue(vol, iss, f"/Users/choihj/PycharmProjects/Journal/Data/EJIS/EJIS_vol{vol}_iss{iss}.csv")
+    # vol: 40-42
+    # iss: 1-4
+    vol=40
+    for iss in range(1,5):
+        scrape_issue(vol, iss, f"/Users/choihj/PycharmProjects/Journal/Data/JMIS/JMIS_vol{vol}_iss{iss}.csv")
