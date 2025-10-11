@@ -48,6 +48,6 @@ def scrape_issue(vol:int, iss:int, out_csv:str):
 if __name__ == "__main__":
     # vol: 40-42
     # iss: 1-4
-    vol=40
+    vol=42
     for iss in range(1,5):
         scrape_issue(vol, iss, f"/Users/choihj/PycharmProjects/Journal/Data/JMIS/JMIS_vol{vol}_iss{iss}.csv")
