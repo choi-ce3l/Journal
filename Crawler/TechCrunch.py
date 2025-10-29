@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-def scrape_techcrunch_ai_articles(start_page=1, end_page=50):
+def scrape_techcrunch_ai_articles(start_page=1, end_page=216):
     """TechCrunch AI 카테고리에서 기사를 수집하는 함수"""
 
     # 저장용 리스트
@@ -146,7 +146,7 @@ def main():
         print(f"  - 키워드가 있는 기사: {df['keywords'].notna().sum()}개")
 
         # CSV 파일로 저장
-        filename = 'techcrunch_ai_articles.csv'
+        filename = '/Users/choihj/PycharmProjects/Journal/Data/TechCrunch.csv'
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         print(f"\n결과가 '{filename}' 파일로 저장되었습니다.")
 

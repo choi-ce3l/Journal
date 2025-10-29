@@ -10,9 +10,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 # 저장 경로 설정
-save_path='Academia/'
+save_path='/Users/choihj/PycharmProjects/Journal/Data/Academia'
 os.makedirs(save_path, exist_ok=True)
-output_file = os.path.join(save_path, "informs_isre_vol36.csv")
+output_file = os.path.join(save_path, "isre_vol36.csv")
 
 # 대기 함수
 def random_wait(a=1, b=3):

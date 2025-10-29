@@ -298,7 +298,7 @@ def main():
     ap.add_argument("--start", required=True, help="시작 날짜 YYYY-MM-DD")
     ap.add_argument("--end", required=True, help="종료 날짜 YYYY-MM-DD")
     ap.add_argument("--section", default=DEFAULT_SECTION, help="아카이브 섹션 경로 (기본: ai-artificial-intelligence)")
-    ap.add_argument("--output", default="./theverge.csv", help="출력 CSV 경로")
+    ap.add_argument("--output", default="/Users/choihj/PycharmProjects/Journal/Data/TheVerge.csv", help="출력 CSV 경로")
     ap.add_argument("--resume", action="store_true", help="이미 저장된 URL은 건너뛰기")
     ap.add_argument("--limit", type=int, default=0, help="최대 기사 수 (0=무제한)")
     args = ap.parse_args()

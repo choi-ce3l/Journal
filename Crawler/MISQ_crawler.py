@@ -93,5 +93,5 @@ if __name__ == "__main__":
     # scrape_issue(vol, issue, f"misq_vol{vol}_iss{issue}.csv")
 
     # 여러 권호 반복 처리 가능
-    for vol, iss in [(47,3),(47,4),(48,1),(48,2),(48,3),(48,4),(49,1),(49,2),(49,3)]:
-        scrape_issue(vol, iss, f"misq_vol{vol}_iss{iss}.csv")
+    for vol, iss in [(47,1),(47,2),(47,3),(47,4),(48,1),(48,2),(48,3),(48,4),(49,1),(49,2),(49,3)]:
+        scrape_issue(vol, iss, f"/Users/choihj/PycharmProjects/Journal/Data/MISQ/misq_vol{vol}_iss{iss}.csv")
