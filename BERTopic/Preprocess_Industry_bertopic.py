@@ -35,14 +35,15 @@ except:
 # ========================================
 # 설정
 # ========================================
-INPUT_FILE = "/mnt/user-data/outputs/Academia.csv"
-OUTPUT_FILE = "/mnt/user-data/outputs/academia_corpus.csv"
+INPUT_FILE = "/home/dslab/choi/Journal/Data/Industry.csv"
+OUTPUT_FILE = "/home/dslab/choi/Journal/BERTopic/Data/industry_corpus.csv"
 
 # 사용자 정의 불용어
 CUSTOM_STOPWORDS = {
     'information', 'system', 'information system',
     'research', 'study', 'paper', 'article',
-    'data', 'result', 'analysis', 'finding'
+    'data', 'result', 'analysis', 'finding',
+    'technology', 'company', 'business'
 }
 
 # POS 태그 필터 (명사·동사 계열만 유지)
@@ -53,7 +54,7 @@ ALLOWED_POS = {
 # ========================================
 
 print(f"{'=' * 60}")
-print(f"BERTopic 전처리 시작")
+print(f"BERTopic 전처리 시작 (Industry)")
 print(f"{'=' * 60}\n")
 
 # 1. 데이터 로드
@@ -240,6 +241,6 @@ print(f"\n[데이터 미리보기]")
 print(corpus_df.head(3)[['title', 'processed_text']].to_string())
 
 print(f"\n{'=' * 60}")
-print(f"✓ academia_corpus.csv 생성 완료!")
+print(f"✓ industry_corpus.csv 생성 완료!")
 print(f"✓ 다음 단계: BERTopic 모델링")
 print(f"{'=' * 60}")

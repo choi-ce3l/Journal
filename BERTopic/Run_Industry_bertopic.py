@@ -12,18 +12,18 @@ warnings.filterwarnings('ignore')
 # ========================================
 # 설정
 # ========================================
-INPUT_FILE = "/mnt/user-data/outputs/academia_corpus.csv"
-OUTPUT_TOPICS_FILE = "/mnt/user-data/outputs/topics_academia.csv"
-OUTPUT_MODEL_PATH = "/mnt/user-data/outputs/bertopic_model"
+INPUT_FILE = "/home/dslab/choi/Journal/BERTopic/Data/industry_corpus.csv"
+OUTPUT_TOPICS_FILE = "/home/dslab/choi/Journal/BERTopic/Data/topics_industry.csv"
+OUTPUT_MODEL_PATH = "/home/dslab/choi/Journal/BERTopic/Model/bertopic_model_industry"
 
 # BERTopic 하이퍼파라미터
-N_TOPICS_RANGE = [10, 15, 20, 25, 30]  # 시도할 토픽 개수
-MIN_TOPIC_SIZE = 10  # 최소 토픽 크기
+N_TOPICS_RANGE = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # 시도할 토픽 개수
+MIN_TOPIC_SIZE = 5  # 5 → 3: 아주 작은 클러스터도 허용 (아웃라이어 최소화)
 N_WORDS = 10  # 토픽당 키워드 개수
 # ========================================
 
 print(f"{'=' * 60}")
-print(f"BERTopic 토픽 모델링 시작")
+print(f"BERTopic 토픽 모델링 시작 (Industry)")
 print(f"{'=' * 60}\n")
 
 # 1. 데이터 로드
@@ -50,19 +50,21 @@ print(f"  ✓ 임베딩 생성 완료: {embeddings.shape}")
 # 4. BERTopic 모델 구성
 print(f"\n[4단계] BERTopic 모델 구성")
 
-# UMAP 차원 축소
+# UMAP 차원 축소 (아웃라이어 감소 최적화)
 umap_model = UMAP(
-    n_neighbors=15,
-    n_components=5,
-    min_dist=0.0,
+    n_neighbors=100,  # 15 → 50: 더 많은 이웃을 고려 (클러스터 형성 용이)
+    n_components=10,  # 5 → 10: 더 많은 정보 보존
+    min_dist=0.0,  # 유지: 밀집된 클러스터 형성
     metric='cosine',
     random_state=42
 )
 print(f"  ✓ UMAP 설정 완료")
 
-# HDBSCAN 클러스터링
+# HDBSCAN 클러스터링 (아웃라이어 감소 최적화)
 hdbscan_model = HDBSCAN(
     min_cluster_size=MIN_TOPIC_SIZE,
+    min_samples=5,  # 추가: 더 유연한 클러스터 형성
+    cluster_selection_epsilon=0.1,  # 추가: 작은 클러스터도 유지
     metric='euclidean',
     cluster_selection_method='eom',
     prediction_data=True
@@ -108,16 +110,21 @@ for nr_topics in N_TOPICS_RANGE:
         topic_info = topic_model.get_topic_info()
         n_topics_found = len(topic_info) - 1  # -1 제외
 
+        # outliers 계산 (topics가 numpy 배열이 아닐 수 있음)
+        topics_array = np.array(topics) if not isinstance(topics, np.ndarray) else topics
+        n_outliers = int((topics_array == -1).sum())
+
         print(f"    - 발견된 토픽 수: {n_topics_found}")
-        print(f"    - Outlier 문서 수: {(topics == -1).sum()}")
+        print(f"    - Outlier 문서 수: {n_outliers}")
 
         # Coherence Score 계산 (간단한 방법)
-        # 실제로는 gensim의 CoherenceModel을 사용할 수 있음
-        # 여기서는 토픽 크기의 분산을 역수로 사용 (균형잡힌 토픽 선호)
+        # 토픽 크기의 분산을 역수로 사용 (균형잡힌 토픽 선호)
         topic_sizes = topic_info['Count'].values[1:]  # -1 제외
         if len(topic_sizes) > 0:
             size_variance = np.var(topic_sizes)
-            score = 1 / (1 + size_variance / 1000)  # 정규화된 점수
+            avg_size = np.mean(topic_sizes)
+            # 평균 크기가 크고 분산이 작을수록 좋은 점수
+            score = avg_size / (1 + size_variance / 100)
         else:
             score = 0
 
@@ -126,7 +133,7 @@ for nr_topics in N_TOPICS_RANGE:
         model_results.append({
             'nr_topics': nr_topics,
             'n_topics_found': n_topics_found,
-            'outliers': (topics == -1).sum(),
+            'outliers': n_outliers,
             'score': score
         })
 
@@ -182,20 +189,43 @@ for topic_id in topic_info['Topic'].values:
 
     # 대표 문서 (확률이 가장 높은 문서 3개)
     if topic_docs_idx:
-        topic_probs_subset = [probs[i][topic_id] if topic_id < len(probs[i]) else 0
-                              for i in topic_docs_idx]
-        top_doc_indices = sorted(range(len(topic_probs_subset)),
-                                 key=lambda i: topic_probs_subset[i],
-                                 reverse=True)[:3]
+        # probs가 2D 배열인 경우와 1D 배열인 경우 모두 처리
+        topic_probs_subset = []
+        for i in topic_docs_idx:
+            try:
+                if isinstance(probs, np.ndarray) and probs.ndim == 2:
+                    # 2D 배열: probs[i, topic_id]
+                    if topic_id < probs.shape[1]:
+                        topic_probs_subset.append(probs[i, topic_id])
+                    else:
+                        topic_probs_subset.append(0)
+                elif hasattr(probs[i], '__len__'):
+                    # 리스트나 1D 배열: probs[i][topic_id]
+                    if topic_id < len(probs[i]):
+                        topic_probs_subset.append(probs[i][topic_id])
+                    else:
+                        topic_probs_subset.append(0)
+                else:
+                    # 스칼라값
+                    topic_probs_subset.append(0)
+            except:
+                topic_probs_subset.append(0)
 
-        representative_docs = []
-        for idx in top_doc_indices:
-            doc_idx = topic_docs_idx[idx]
-            if doc_idx < len(df):
-                title = df.iloc[doc_idx]['title']
-                representative_docs.append(title)
+        if topic_probs_subset:
+            top_doc_indices = sorted(range(len(topic_probs_subset)),
+                                     key=lambda i: topic_probs_subset[i],
+                                     reverse=True)[:3]
 
-        rep_docs_str = ' | '.join(representative_docs)
+            representative_docs = []
+            for idx in top_doc_indices:
+                doc_idx = topic_docs_idx[idx]
+                if doc_idx < len(df):
+                    title = df.iloc[doc_idx]['title']
+                    representative_docs.append(title)
+
+            rep_docs_str = ' | '.join(representative_docs)
+        else:
+            rep_docs_str = ""
     else:
         rep_docs_str = ""
 
@@ -238,14 +268,33 @@ print(f"✓ 모델 저장: {OUTPUT_MODEL_PATH}")
 
 # 문서별 토픽 할당 추가
 df['topic'] = topics
-df['topic_probability'] = [prob.max() if len(prob) > 0 else 0 for prob in probs]
+
+# topic_probability 계산 (probs 구조에 따라 다르게 처리)
+topic_probs = []
+for i, prob in enumerate(probs):
+    try:
+        if isinstance(prob, np.ndarray):
+            if prob.ndim == 1 and len(prob) > 0:
+                topic_probs.append(prob.max())
+            elif prob.ndim == 0:
+                topic_probs.append(float(prob))
+            else:
+                topic_probs.append(0.0)
+        elif hasattr(prob, '__len__') and len(prob) > 0:
+            topic_probs.append(max(prob))
+        else:
+            topic_probs.append(0.0)
+    except:
+        topic_probs.append(0.0)
+
+df['topic_probability'] = topic_probs
 
 output_with_topics = OUTPUT_TOPICS_FILE.replace('topics_', 'corpus_with_topics_')
 df.to_csv(output_with_topics, index=False, encoding='utf-8-sig')
 print(f"✓ 토픽이 할당된 코퍼스 저장: {output_with_topics}")
 
 print(f"\n{'=' * 60}")
-print(f"✓ BERTopic 모델링 완료!")
+print(f"✓ BERTopic 모델링 완료! (Industry)")
 print(f"✓ 총 토픽 수: {len(topics_df)}")
 print(f"✓ 최적 nr_topics: {best_n_topics}")
 print(f"✓ 최고 점수: {best_score:.4f}")
